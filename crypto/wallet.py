@@ -1,10 +1,8 @@
 import os
 
-import cbpro
-
 from .config import data_dir
 
-public_client = cbpro.PublicClient()
+from .client import client
 movements_file_header = 'kind;price;origin;ori_amount;destiny;dest_amount\n'
 
 
@@ -26,7 +24,7 @@ class Wallet:
         # Amount is a portion of origin in wallet
         assert 0 < amount <= 1
         assert self.assets[origin] > 0
-        price = float(public_client.get_product_ticker(product_id='-'.join((destiny, origin)))['price'])
+        price = float(client.get_product_ticker(product_id='-'.join((destiny, origin)))['price'])
         ori_amount = self.assets[origin] * amount
         dest_amount = ori_amount / price
         self.assets[origin] -= ori_amount
@@ -38,7 +36,7 @@ class Wallet:
         # Amount is a portion of origin in wallet
         assert 0 < amount <= 1
         assert self.assets[origin] > 0
-        price = float(public_client.get_product_ticker(product_id='-'.join((origin, destiny)))['price'])
+        price = float(client.get_product_ticker(product_id='-'.join((origin, destiny)))['price'])
         ori_amount = self.assets[origin] * amount
         dest_amount = ori_amount * price
         self.assets[origin] -= ori_amount

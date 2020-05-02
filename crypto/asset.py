@@ -1,9 +1,7 @@
 from datetime import datetime
 
 import pandas as pd
-import cbpro
-
-public_client = cbpro.PublicClient()
+from .client import client
 
 
 class Asset:
@@ -33,7 +31,7 @@ class Asset:
 
     def get_df(self, granularity=300, smas=None, emas=None):
         columns = ['time', 'min', 'max', 'open', 'close', 'volume']
-        self.df = pd.DataFrame(public_client.get_product_historic_rates(self.pair, granularity=granularity),
+        self.df = pd.DataFrame(client.get_product_historic_rates(self.pair, granularity=granularity),
                                columns=columns)
         self.df.index = self.df['time'].apply(datetime.fromtimestamp)
         self.df = self.df.drop('time', axis=1)
@@ -47,5 +45,5 @@ class Asset:
         pass
 
     def __str__(self):
-        state = public_client.get_product_ticker(product_id=self.pair)
+        state = client.get_product_ticker(product_id=self.pair)
         return '\n'.join([f'{k}: {v}' for k, v in state.items()])

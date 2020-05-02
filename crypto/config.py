@@ -1,2 +1,6 @@
-data_dir = '/home/manu/jupyter-desk/CBPro/00_DATA'
+import os
+
+data_dir = os.path.join(os.path.expanduser('~'), 'crypto_data')
+secrets_path = os.path.join(data_dir, 'secrets')
+
 tracking_assets = ['BTC', 'ETH']
