@@ -59,6 +59,7 @@ class Strategy:
         if self.backtesting:
             return self._update_relevant_info_backtesting()
         else:
+            time.sleep(1)
             return self._update_relevant_info_real_time()
 
     def _update_relevant_info_backtesting(self):
