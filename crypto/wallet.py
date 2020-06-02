@@ -1,7 +1,8 @@
 import os
 
-from .config import data_dir
+import pickle as pkl
 
+from .config import wallet_dir
 from .client import client
 movements_file_header = 'kind;price;origin;ori_amount;destiny;dest_amount\n'
 
@@ -9,36 +10,42 @@ movements_file_header = 'kind;price;origin;ori_amount;destiny;dest_amount\n'
 class Wallet:
     def __init__(self, name):
         self.assets = {
-            'EUR': 1000.,
+            'EUR': 100.,
             'USD': 0.,
             'BTC': 0.,
             'ETH': 0.,
+            'ZRX': 0.,
         }
         self.last_movement = {}
-        self.file = os.path.join(data_dir, name)
-        with open(self.file, 'w') as f:
+        self.file_state = os.path.join(wallet_dir, name) + '.pkl'
+        self.file_movements = os.path.join(wallet_dir, name) + '.csv'
+        with open(self.file_movements, 'w') as f:
             f.write(movements_file_header)
 
-    def buy(self, destiny, origin, amount):
+    def buy(self, pair, amount, price=None):
         # Purchasing destiny with origin
         # Amount is a portion of origin in wallet
+        destiny, origin = pair.split('-')
         assert 0 < amount <= 1
         assert self.assets[origin] > 0
-        price = float(client.get_product_ticker(product_id='-'.join((destiny, origin)))['price'])
+        if price is None:
+            price = float(client.get_product_ticker(product_id='-'.join((destiny, origin)))['price'])
         ori_amount = self.assets[origin] * amount
-        dest_amount = ori_amount / price
+        dest_amount = ori_amount * 0.995 / price  # Coinbase pro fees factored in
         self.assets[origin] -= ori_amount
         self.assets[destiny] += dest_amount
         self.log_last_movement('BUY', price, origin, ori_amount, destiny, dest_amount)
 
-    def sell(self, origin, destiny, amount):
+    def sell(self, pair, amount, price=None):
         # Selling destiny with origin
         # Amount is a portion of origin in wallet
+        origin, destiny = pair.split('-')
         assert 0 < amount <= 1
         assert self.assets[origin] > 0
-        price = float(client.get_product_ticker(product_id='-'.join((origin, destiny)))['price'])
+        if price is None:
+            price = float(client.get_product_ticker(product_id='-'.join((origin, destiny)))['price'])
         ori_amount = self.assets[origin] * amount
-        dest_amount = ori_amount * price
+        dest_amount = ori_amount * price * 0.995
         self.assets[origin] -= ori_amount
         self.assets[destiny] += dest_amount
         self.log_last_movement('SELL', price, origin, ori_amount, destiny, dest_amount)
@@ -52,8 +59,11 @@ class Wallet:
             'dest_amount': dest_amount
         }
 
-        with open(self.file, 'a') as f:
+        with open(self.file_movements, 'a') as f:
             f.write(f'{kind};{price};{origin};{ori_amount};{destiny};{dest_amount}\n')
+
+    def save(self):
+        pkl.dump(self, open(self.file_state, 'wb'))
 
     def __str__(self):
         return '\n'.join([f'{k}: {v}' for k, v in self.assets.items()])

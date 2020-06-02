@@ -185,6 +185,7 @@ setup(
     entry_points={  # Optional
         'console_scripts': [
             'crypto=crypto.main:main',
+            'crypto-backtesting=crypto.backtesting:main',
         ],
     },
 

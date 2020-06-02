@@ -20,4 +20,4 @@ if os.path.isfile(os.path.join(secrets_path, 'secrets.pkl')):
     except TypeError:
         print('Password needed for authentication. Continuing with Public Client...')
 else:
-    print('Continuing with Public Client...')
+    print('Secrets folder not found. Continuing with Public Client...')
