@@ -47,7 +47,7 @@ def main():
         strategy.execute_strategy()
     except StopIteration:
         if wallet.assets[asset.crypto]:
-            wallet.sell(asset.pair, 1)
+            wallet.sell(asset.pair, 1, strategy.info.name)
         print(wallet)
         print('Finished backtesting')
     except:
